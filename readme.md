@@ -292,3 +292,154 @@
 
 
 11.25과제 수정, 상세보기
+
+11.29
+
+- 김범준 강사님 git주소
+    - https://github.com/comstudy21joon/addinedu
+
+- heroku(무료)
+    - firebase와 유사하다. 파이썬이나 노드js를 사용 가능하다
+        - 사이트 주소 https://www.heroku.com/
+
+- firebase는 노드js를 사용하려면 functions를 사용하는데 이거는 유료다. 때문에 nodejs를 하는건 AWS가 더 유용하다.
+
+- 클라우드 서비스
+    - 참고 자료
+        - https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=acornedu&logNo=220965470213
+
+    - iaas = AMW (아마존같은것) 
+        - 서버를 직접 구축하고 사용 하는것
+
+    - PaaS = 파이어베이스,히로쿠,윈도우 (지금 배우고 있는것)
+        - 서버를 구축안하고 사용하는것(개발만 하면 되는것)
+
+    - SaaS = 일반사용자가쓰는 클라우드서비스
+        - 네이버클라우드 구글클라우드같은것
+
+1. React와 Firebase 연동하기
+
+    1). react 폴더로 선언하기 
+        - cmd 창에 ' npx create-react-app . '
+    
+    2) git허브 하기
+        - git init
+        - git remote add origin 주소
+        - git add .
+        - git push -u origin master 
+
+    3) firebase 설치
+        - 8 버전 설치하기(react할 폴더에)
+            - npm install -s firebase@8 (-s는 이곳에만 설치//@8은 8버전으로 설치 한다는 뜻)
+            - firebase를 dependencies에 추가하기 위해서 설치해야한다
+        
+        - 여태까지 우리는 firebase를 CDN으로 사용했는데 REACT에서는 NPM방식으로 해야하기때문에
+            모듈을 만들어 설정을 해야한다.
+
+        - 나중에 만들어서 build를 한다. 그것으로 나온 결과를 통해서 firebase로 deploy를 한다 때문에 따로만드는게    편하다(같이 만들어도 되지만 복잡하게 꼬일 수 도 있기 때문에)
+            - npm run build를 사용하면 모든결과물이 하나로 묶인다. 이걸 build 폴더로 옮겨서 firebase로 옮겨서 deploy를 한다 (보통 REACT 완성하고 사용한다)
+
+        
+        1) 다운이 끝나면 src 폴더에 fbase.js를 만든다
+
+        2) fbase.js에 기록한다
+            ```
+            import firebase from "firebase/app"
+
+            // 이 내용은 firebase에서 내가 만든 프로젝트 설정 아래에 npm에 있다
+            const firebaseConfig = {
+                apiKey: ,
+                authDomain: ,
+                projectId: ,
+                storageBucket: ,
+                messagingSenderId: ,
+                appId: ,
+                measurementId: 
+            };        
+
+            export default firebase.initializeApp(firebaseConfig)
+                //default는 한개만 넘긴다. const는 여러개를 넘긴다
+            ```
+            
+            - fbase.js로 들어가서 id값들을 (process.env.설정값)으로 바꾼다
+
+        3) index.js 들어간다
+
+            ```
+            import firebase from './fbase'
+            ```
+
+            입력한다.
+
+        4) 인증키는 .env파일에 숨겨두고 깃허브에 올라가지 공개안되게 해야한다.
+            - apiKey와 appId는 필수적으로 숨겨주는게 좋다
+
+            - 프로젝트 진행할 폴더에 .env 파일을 만든다
+                ```
+                REACT_APP_API_KEY= 
+                REACT_APP_PROJECT_ID= 
+                REACT_APP_MESSAGING_SENDER_ID= 
+                REACT_APP_APP_ID=
+                
+                //REACT_APP(REACT_APP은 환경변수이다)_APP_ID(변수이름)
+                id종류는 다가려주는게 좋다
+                ```
+
+            - .gitignore 파일에 #misc있는 곳에 .env 를 추가로 적어준다
+                - .env를 add할때 제외한다는 것이다.
+
+
+    4) src 폴더 아래에 components와 routes 폴더를 만든다
+        - routes 폴더에는 Aut.js, EditProfile.js, Home.js, Profile.js를 만든다
+            - Auth.js, EditProfile.js, Home.js, Profile.js에 코딩을 한다
+                ```
+                export default function Auth() {
+                    return (
+                        <div>Auth page</div>
+                    );
+                }  
+                    // 나머지는 이름만 바꿔서하면된다. 화살표 함수 사용가능
+                ```
+
+        - components 폴더에는 기존에 App.js를 이동시키고 Router.js를 만든다
+            - npm install -s react-router-dom 을한다
+
+        
+    5) Router.js 에 코딩을 한다
+            ```
+            import { BrowserRouter, Route, Routes} from "react-router-dom";
+            import Home from "../routes/Home";
+            import Profile from "../routes/Profile";
+            import Auth from "../routes/Auth";
+
+
+            export default function AppRouter () {
+                return(
+                    <BrowserRouter>
+                        <Routes>
+                            <Route exact path="/" element={<Home />}>                    
+                            </Route>
+                            <Route exact path="/profile" element={<Profile />}>                    
+                            </Route>
+                            <Route exact path="/auth" element={<Auth />}>                    
+                            </Route>
+                        </Routes>
+                    </BrowserRouter>
+                )
+            }
+            ```
+
+    6) App.js도 수정을 한다
+        ```
+        import AppRouter from "./Router";
+
+
+        function App() {
+        return (
+            <AppRouter />
+        );
+        }
+
+        export default App;
+
+        ```
