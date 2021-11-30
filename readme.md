@@ -443,3 +443,375 @@
         export default App;
 
         ```
+    7) 구글 아이디와 깃허브 추가하기
+        - firebase 홈페이지에 들어간다
+
+        - AuthenTication에 들어가서 Sing-in method에 들어가 새 제공탭에서 구글, 이메일 , 깃허브를 추가한다
+
+        - 깃허브 추가방법은 깃허브를 누르고 url을 복사한 후에 깃허브 홈페이지들어가서 setting 탭으로 들어가 oAuth에 들어가서 url을 집어넣고 계정을 복사해서 넣고 비밀번호를 넣는다
+
+
+2. firebase 요소들 가져오는 방법
+    - fbase.js에 들어간다.
+    - 사용할 요소들을 import 하고 export 한다
+        ```        
+        import "firebase/auth"; (계정)
+        import "firebase/firesotre"; (데이터베이스 저장)
+        import "firebase/storage"; (파일 저장)
+
+        export const authService = firebase.auth();
+        export const storageService = firebase.storage();
+        export const dbService = firebase.firestore();
+        export const firebaseInstance = firebase;
+
+        ```
+
+    - storage와 firesotre(db)의 차이점은?
+        - storage는 파일 또는 물리적 저장소의 객체 스토리가 될 수 있다
+        - db는 조직화된 데이터가 저장된 장소이다
+
+        - db는 storage의 일종이다
+
+        - sotrage는 텍스트, 이미지, 영상등 다양한 종류가 저장이가능하다
+        - db는 ID, record, 거래정보 같은 구조적 또는 반구조적 데이터가 저장이된다.
+
+        - 즉, 스토리지는 파일형태가 되면 무엇이든 담을 수 있고, DB는 담기위해서 가공해야한다. 예를 들면 글의 제목과 내용은 DB에 저장이 되지만, 업로드 파일들은 스토리지에 저장이 된다.
+
+    - firebase 요소가 필요한곳에 import해주면 끝난다
+        ```
+        만약에 Auth.js에서 authService와 firebaseInstance를 사용 하고 싶다면
+        Auth.js에 들어간후에
+
+        import { authService, firebaseInstance //사용할 요소들 } from "fbase";
+
+        를 입력하면 된다
+        ```
+
+
+3. src 기본 베이스 경로로 지정하기
+    - 제일 상단 폴더에 전역으로 작용하도록 파일을 만든다. 
+    - jsconfig.json으로 만들었다
+        ```
+        {
+            "compilerOptions": {
+                "baseUrl": "src"
+            },
+            "include": ["src"]
+        }
+        ```
+        를 입력하면 된다.
+
+
+4. 네비 바 만들기
+    - componets 폴더에 Nav.js를 만든다
+
+    - 네비바는 웹 사이트에서 가장 많이 클릭하는 것으로 모든페이지에 들어가는게 좋다
+
+    - 메뉴를 의미하는 것으로 보기도 좋고 편리하게 만들수 있다
+
+    - React에서 react-router를 이용해 페이지 전환을 하기위해서는 react-router-dom의 Link 요소를 이용해야한다
+        ```
+        import { Link } from "react-router-dom";
+        ```
+        이걸 상단부에 입력을 한다.
+
+    - 나머지는 다른것과 똑같이 함수를 만들고 export 시킨다.
+
+
+5. App.js 설정하기
+    - 이곳을 통해서 설정한 요소들을 모아서 index.js로 이동하여 웹을 구성한다
+
+    - 메인페이지 같은 것이다
+
+6. Router.js 
+    - Route는 페이지를 연결시켜주는 것이다.
+
+    - Router.js는 그런 파일은 아니지만 App.js에 입력이 많다면 복잡해서 중간다리로 생각하고 만들었다.
+
+    - 중간다리로 다른요소들을 가지고와서 조합한다.(firebase,메인페이지,Navi,회원가입등등)
+
+    - react-router-dom에 내장된 컴포넌트들(BrowserRouter, Routes, Route, Link)
+        - BrowserRouter : html5의 history API를 통해 UI를 업데이트한다
+        - Routes : Route로 생성된 자식요소 중에 매칭되는 첫번째 Route를 렌더링해준다 이것을 이용해 특정 컴포넌트만 렌더링 해서 화면에 띄울 수 있다.
+        - Route : 요소별로 원하는 url을 지정한다.
+        - Link: 지정한 URL로 이동하게 해준다 새로운페이지를 불러오는 것이므로 기존 요소들의 상태값은 소멸된다.
+    
+    - 로그인하고 로그아웃 만들기
+        ```
+        // 내장컴포넌트가져오기
+        import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+        // 가지고온 요소들
+        import Home from "routes/Home";
+        import Profile from "routes/Profile";
+        import Auth from "routes/Auth";
+        import EditProfile from "routes/EditProfile";
+
+        //네비바
+        import Nav from "components/Nav";
+
+        export default function AppRouter({ isLoggedIn, setIsLoggedIn //가지고갈 요소 }) {
+        return (
+            <BrowserRouter>
+            <Nav />
+            <Routes>
+                {isLoggedIn ? ( // 로그인이 된다면
+                <>
+                    <Route exact path="/" element={<Home />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/edit" element={<EditProfile />} />
+                </>
+                ) : (   // 로그인 상태가 아니라면 회원가입을 띄운다
+                <Route exact path="*" element={<Auth />} />
+                )}
+            </Routes>
+            </BrowserRouter>
+        );
+        }       
+
+        ```
+
+7. 회원가입과 로그인 만들기
+    - Auth.js가 로그인상태가 아니라면 띄우는 것으로 여기에 구성한다
+
+    - firebase에서 회원가입서비스와 firebase 객체를 사용해야한다
+
+    - Hook 구조분해이다
+        - 참고사이트 https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
+
+        ```
+        //Hook에서 요소를 빼내서 선언하는 것
+        var ~~~ = [요소, 요소, 요소];        
+        ```
+
+    - useState를 사용해서 클래스 기반 컴포넌트함수를 제작한다. 첫번째 원소는 상태값을 저장할 변수고, 두번째 원소는 상태값을 갱신할 때 사용 할 함수다.
+        - 상태 값 갱신 함수를 사용하지 않고 직접 젼수를 다른 상태값으로 하면 반영이 안된다
+        - 클래스 컴포넌트에서 state갱신할 때는 반드시 setState를 사용해야 한다.
+        - 값이 바뀌면 자동으로 렌더링 된다.
+
+    - firebase에 저장된 SNS아이디로 로그인하기
+        - SNS 함수는 firebase auth에 저장된 함수를 부르면된다.
+        ```
+
+        const onSnsLogin = async function (event) {
+            
+            // fbase.js에  firebase 객체를 사용하도록 설정 필요하다.
+            var provider;
+            if (event.target.name === "google") {
+            provider = new firebaseInstance.auth.GoogleAuthProvider();
+            } else if (event.target.name === "github") {
+            provider = new firebaseInstance.auth.GithubAuthProvider();
+            }
+            const data = await authService.signInWithPopup(provider);
+            console.log(data);
+        };
+
+        ```
+
+    -
+8. 로그아웃 처리
+    - 로그인 후에는 Home.js 가 나오는데 로그아웃 버튼을 만든다
+    - 그 후에 파이어베이스에서 있는 로그아웃 처리를 사용한다
+
+    ```
+    <button
+        onClick={function (event) {
+          authService.signOut(); // 파이어베이스 로그아웃 처리
+        }}>
+        Logout
+    </button>
+    ```
+
+
+11.30
+
+li에 key값
+
+1. 복습한 것
+    - 보내 줄 요소들 한테 태그에 추가한다
+    ```
+    하위 요소에 있는 Message에 msg, userObj를 주고싶다 하면 태그에 이렇게 추가하면 된다
+    ex) <Message msg={msg} userObj={userObj} />
+    ```
+
+    - useState를 많이 사용한다. 다시 확인해보기
+
+    - true flase로 로그인하고 안했다면 나오는 버튼 만들기
+        - 구조
+        ```
+        {상태값 ? (
+            <나타낼 html>            
+        ) : (
+            <아닐때 나올 html>
+        )}
+        ```
+
+        - 적용 예시
+        ```
+        <li>
+            {isLoggedIn ? ( // 로그인이 되어있다면
+            <button
+                onClick={function (event) {
+                authService.signOut(); // 파이어베이스 로그아웃 처리
+                }}
+            >
+                Logout
+            </button>
+            ) : ( // 로그아웃이라면
+            <>로그인 되어있지 않음</>
+            )}
+        </li>
+        ```
+
+
+2. 입력된 글을 삭제하기
+    - 함수 만들기
+        - async로 클릭시 페이지가 안바뀌게 하기
+        - objId로 대상지정 후 삭제
+        
+    예시)
+    ```
+    1번 방법
+    async function onDelClick(objId) {        
+        const data = await dbService.doc(`messages/${objId}`).delete();
+    }
+
+    2번 방법
+    async function onDelClick(objId) {
+        const data = await dbService.collection("messages").doc(objId).delete();
+    }
+
+    버튼에 클릭시 함수가 실행해주도록 세팅
+    <button
+        onClick={function (event) {
+            onDelClick(msg.id);
+        }}
+        >
+        삭제
+    </button>
+    ```
+    
+3. 로그인된 유저가 맞다면 자기가 쓴글 수정하거나 삭제하기
+    - 복습했던 조건문 사용
+
+    - 이번엔 로그인된 유저(userObj.uid)가 글을쓴 유저(creatorId)가 동일인인지 확인
+
+    ```
+    <li>
+      <span style={{ display: "inline-block", width: "400px" }}>
+        {editing ? (
+          <input
+            type="text"
+            value={newMsg}
+            onChange={function (event) {
+              setNewMsg(event.target.value);
+            }}
+          />
+        ) : (
+          <>
+            {msg.text}({msg.creatorEmail})
+          </>
+        )}
+      </span>
+      {userObj.uid === msg.creatorId ? (
+        <>
+          <button
+            onClick={function (event) {
+                setEditing(!editing);
+                if (editing){
+                    dbService.doc(`message/${msg.id}`).update({text:newMsg})
+                }
+            }}
+          >
+            {editing ? "수정완료" : "수정"}
+          </button>
+          <button
+            onClick={function (event) {
+              onDelClick(msg.id);
+            }}
+          >
+            삭제
+          </button>
+        </>
+      ) : (
+        <></>
+      )}
+    </li>
+    ```
+
+4. 입력된 이미지 실시간 변경하기
+    - 실시간 갱신되도록 이벤트 핸들러 사용
+        - .get() 대신 .onSnapshot()으로 대체한다
+    
+    예시
+    ```
+    useEffect(() => {
+
+        dbService.collection("messages").onSnapshot((snapshot) => {
+        const newMsgs = snapshot.docs.map((doc) => {
+            return {
+            id: doc.id, 
+            ...doc.data(), // ...은 구조분해로 기존데이터를 복사해서 사용한다
+            };             // 뒤에 놓으면 뒤로 복사해 붙인다
+        });
+        setMsgs(newMsgs);
+        });
+    }, []);
+    ```
+
+5. 이미지 미리보기, 삭제, 업로드 만들기
+    - 파일입력과 삭제를 html만들기
+    ```
+    //이미지 파일 넣는 버튼생성(image/* 은 image를 모두포함)
+    <input type="file" id="image" accept="image/*" onChange={onLoadImg} /> 
+
+    <div id="prev_image">선택 사진 미리보기 :<img width="150" src={imgFiles}    alt="preview" /></div>
+      <button onClick={onClearImg}>이미지 삭제</button>
+
+    ```
+
+    - 이미지 임의 URL 생성하기
+        - useState를 사용한다
+        ```
+        const [imgFiles, setImgFiles] = useState("");
+        ```
+
+        - input된 이미지 URL을 가져온다
+            - onChange로 함수넣는다
+
+        ```
+        //URL을 생성(URL.createObjectURL)하고 타겟된 파일을 지정(.files[0])
+        onChange((event) => {
+            setImgFiles(URL.createObjectURL(event.target.files[0]));
+        })
+        
+        ```
+
+        - 이 URL로 <img> 태그에 src로 경로지정한다
+
+    - 미리보기 이미지 삭제
+        - 저장된 URL을 null로 만든다
+    
+        ```
+        function onClearImg() {
+            setImgFiles(null);    
+        }
+        ```
+
+    - 업로드 onSumbit함수 수정
+        - 파일이름 지정을 위해 시간과 파일 끝부분 데이터 추출
+        ```
+
+        var 시간값 = new Date().getTime()
+        var 끝부분 = 이미지.name.substr(이미지.name.lastIndexOf("."))
+        var 저장이름 = 시간값 + 끝부분
+        
+        스토리지에 저장하기
+        var 경로값 = storageServic.ref().child(저장이름)
+        var 결과 = await 경로값.put(이미지파일)
+        db쓸값 = 결과.ref.getDownloadURL()
+
+        그리고 db에 저장되는 곳에
+        imageUrl : 쓸값
+
+        ```
