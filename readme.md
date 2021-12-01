@@ -815,3 +815,190 @@ li에 key값
         imageUrl : 쓸값
 
         ```
+
+
+
+12.01
+
+- 강사님 node.js & mongodb 수업 Git 주소
+    - https://github.com/comstudy21joon/addinedu_nodejs.git
+
+1. node.js
+    1) express
+    2) view engine
+
+    3)  노드 설정하기
+        - npm init -y (노드 초기화)
+
+        - public/ upload/ views 폴더 만들기
+
+        - git 설정하기
+            - git init
+            - git remote add origin 경로
+            - git add .
+            - git commit -m"쓸말"
+            - git push -u origin master
+
+        - express 설치 
+            - npm install express --save
+
+        - git 이그노어 만들기
+            - https://www.toptal.com/developers/gitignore
+            - 들어가서 제외할 파일들 설정하고 생성 후에 다른이름 저장으로 만듬
+
+        - nodemon 설치하면 매번 서버를 재실행 안해도됨
+            - npm install nodemon --save-dev
+            - pack.json 파일에서 script 부분 수정
+    
+    4) views 폴더에서 ejs나 pug로 사용하면 편함(서브 페이지)
+        - view엔진은 서버사이드기술(백앤드)
+        - react는 프론트앤드로 다르다
+        - ejs 인스톨하기
+            - npm install --save ejs (node_module안에 ejs를 저장한다)
+    
+    5) Post 방식 사용하기
+        - // bodyParser 미들웨어 사용 - POST방식 전송에서 body의 데이터를 접근 가능해진다
+            ```
+            app.use(express.json());
+            app.use(express.urlencoded({ extended:true }));
+            ```
+
+        - url 변수 받는방법
+            - <a href "주소/:(id) ?(id))">
+            - : 클론은 반드시 붙여야 한다
+            - :(id)는 params로 받는 방법
+            - ?(id)는 query로 받는 방법
+
+2. 서버 구축하기
+    - express 선언
+        ```
+        const express = require("express");
+        const app = express();        
+        ```
+
+    - 라우터 선언
+        ```
+        const router = express.Router();
+        ```
+
+    - 서버생성
+        ```
+        app.use("/", router);
+        const server = http.createServer(app);
+        server.listen(3000, () => {
+        console.log("서버 실행 중 : http://localhost:3000");
+        });
+        ```
+    
+    - views엔진 사용
+        ```
+        app.set("view engine", "ejs");
+        app.set("views", __dirname + "/views");
+        ```
+
+    - get방식 기본페이지 틀
+        - req와 res순서가 바뀌어선 안된다
+        ```
+        router.route("/").get((req, res) =>{
+            res.end();
+        })
+        ```
+    
+    1)  파일을 넣기(read)
+        - 선언된 파일 리스트가 있을때 html로 뿌려주는 방법
+        - 예를 들어 car_list가 있다
+        - 그것을 car_list.ejs에 넣고 싶다
+        
+        ```
+        router.route("/주소").get((req, res) =>{
+            var 데이터명 = {title:"list", list: list };
+
+            req.app.render("list", 데이터명, (err, html)=>{
+                res.end(html); //res 해야함
+            })
+        })
+        ```
+    
+    2) 파일 만들기(create)
+        - 보내준 파일을 업데이트
+        - post 방식사용
+        - post는 body에 정보를 받아옴
+
+        ```
+        router.route("/주소").post((req,res)=>{
+            var 데이터명 ={
+                필드명 : req.body.가져온필드명
+                ...
+            }
+
+            데이터테이블.push(데이터명) // 데이터 만드는 작업
+            res.redirect("/이동url경로") // 경로로 새로고침한다 "/경로"에서 /는 절대경로
+        })
+        ```
+
+    3) 파일 상세보기
+        - 상세보기는 read와 같은 get 방식
+            ```
+            router.route("/주소/:고유번호").get((req, res) =>{
+                function 함수명(구유번호) {
+                var no = Number(고유번호);
+                var 데이터 = null;
+                for (var i = 0; i < car_list.length; i++) {
+                    if (car_list[i].no == no) {
+                    carData = car_list[i];
+                    break;
+                    }
+                }
+                return carData;
+                }
+                var 데이터 = 함수명(req.params.고유번호); //params로 번호를 들고왔기 때문
+                req.app.render("car_detail", {car:데이터명}, (err, html) =>{
+                    res.end(html); //read와 똑같이 끝남
+                })
+            })
+            ```
+
+    4) 상세보기에서 수정하기(update)
+        - 수정은 read와 같은 get으로 저장된 데이터를 가지고온 후에 create처럼 post로 보내서 수정을 한다
+            ```
+            router.route("/car_modify/:no").get((req, res) => {            
+
+            var carData = findCarData(req.params.no);
+                req.app.render("car_modify", { car: carData }, (err, html) => {
+                    res.end(html);
+                });
+            });
+
+            router.route("/car_modify").post((req, res) => {
+
+            // 수정된 정보가 반영
+            var carData = {
+                no: req.body.no,
+                name: req.body.name,
+                price: req.body.price,
+                company: req.body.company,
+                year: req.body.year,
+            };
+            var idx = findIndex(req.body.no);
+            car_list[idx] = carData;
+
+            // 목록 페이지로 갱신
+            res.redirect("/car_list");            
+            });
+            ```
+
+        - 이렇게 두개의 router를 만든다
+
+    5) 삭제하기(deleta)
+        - post 방식으로 보내서 지운다
+
+        ```
+        router.route("/car_delete/:no").post((req,res) =>{
+
+            var no = findIndex(req.params.no);
+            car_list[idx] = carData;
+            
+            car_list.delete(req.body.no);
+            res.redirect("/car_list"); // 페이지 갱신하기
+        });
+        ```
